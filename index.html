@@ -15,7 +15,7 @@
     <!-- 3. 載入 Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- 4. 載入 Lucide 圖示庫 -->
+    <!-- 4. 載入 Lucide 圖示庫 (不直接解構，避免 Infinity 衝突) -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/lucide-react@latest"></script>
 
@@ -36,12 +36,11 @@
         const { useState, useEffect, useRef } = React;
         
         /**
-         * 修正後的圖示載入組件 (防止 React Error #130 & Infinity 宣告錯誤)
-         * 避免使用解構賦值，直接從全域物件獲取圖示組件
+         * 修正後的圖示載入組件
+         * 避免使用解構賦值，直接從全域物件獲取圖示組件，解決 Infinity 衝突
          */
         const SafeIcon = ({ name, size = 16, className = "", strokeWidth = 2 }) => {
             const LucideLib = window.lucideReact || window.Lucide || {};
-            // 嘗試不同的命名規範 (PascalCase)，並避開直接變數宣告
             const IconComponent = LucideLib[name] || LucideLib[name.charAt(0).toUpperCase() + name.slice(1)];
             
             if (!IconComponent) {
@@ -140,22 +139,22 @@
                     date: "4/21 (二)", title: "碩二報告 · 自由行", accent: "bg-sky-400",
                     events: [
                         { id: "2-1", time: "07:15", title: "早餐：紅茶冰室", loc: "沙田店", map: "紅茶冰室 沙田", student: "全體 07:00 大廳集合，老師同行。必點：奶茶、炒蛋。", teacher: "同行早餐，體驗地道冰室文化。", transport: "步行 5 分鐘" },
-                        { id: "2-2", time: "10:00", title: "研討會發表 (碩二)", loc: "EdUHK ICLT", map: "香港教育大學", student: "正式發表。請穿正式服裝。加油！", teacher: "指導碩二學生發表，全程出席。", transport: "東鐵綫至大埔墟站轉 74K 巴士" },
+                        { id: "2-2", time: "10:00", title: "研討會發表 (碩二)", loc: "EdUHK ICLT", map: "香港教育大學", student: "正式發表時段 (至 12:30)。請穿正式服裝。", teacher: "指導碩二學生發表，全程出席。", transport: "東鐵綫至大埔墟站轉 74K 巴士" },
                         { id: "2-3", time: "13:30", title: "自由行：尖沙咀/深水埗", loc: "市區探索", map: "尖沙咀星光大道", student: "老師開始個人行程，學生進入自由模式 (路線 A/B/C)。", teacher: "老師下午為個人行程時間。", transport: "東鐵綫直達尖東站" }
                     ]
                 },
                 {
                     date: "4/22 (三)", title: "碩一報告 · 官方晚宴", accent: "bg-indigo-400",
                     events: [
-                        { id: "3-1", time: "09:30", title: "早餐：牛奶冰室", loc: "沙田站旁", map: "牛奶冰室 沙田", student: "保持放鬆心情迎接發表！", teacher: "師生同行早餐。", transport: "步行 3 分鐘" },
-                        { id: "3-2", time: "12:00", title: "研討會發表 (碩一)", loc: "EdUHK", map: "香港教育大學", student: "碩一發表時段。加油加油！", teacher: "評審與指導發表。", transport: "交通同前日" },
+                        { id: "3-1", time: "09:30", title: "早餐：牛奶冰室", loc: "沙田站旁", map: "牛奶冰室 沙田", student: "保持放鬆心情迎接下午報告！", teacher: "與師生同行早餐。", transport: "步行 3 分鐘" },
+                        { id: "3-2", time: "12:00", title: "研討會發表 (碩一)", loc: "EdUHK", map: "香港教育大學", student: "碩一發表時段 (至 13:00)。加油！", teacher: "評審與指導發表。", transport: "交通同昨日" },
                         { id: "3-3", time: "18:30", title: "研討會晚宴：八方棧", loc: "Bafang Zhan", map: "八方棧", student: "必帶胸牌！接駁巴士在校門口。老師此時不參與。", teacher: "自由活動或與師母個人行程。", transport: "接駁巴士 (需出示胸牌)" }
                     ]
                 },
                 {
                     date: "4/23 (四)", title: "最後補貨 · 賦歸", accent: "bg-orange-400",
                     events: [
-                        { id: "4-1", time: "10:00", title: "蛋塔採購 (Bakehouse)", loc: "新城市廣場店", map: "Bakehouse 沙田", student: "最後衝刺！推酸種蛋塔。建議手提上機。", teacher: "領取代訂蛋塔。", transport: "就在飯店隔壁商場" },
+                        { id: "4-1", time: "10:00", title: "蛋塔採購 (Bakehouse)", loc: "新城市廣場店", map: "Bakehouse 沙田", student: "最後衝刺！推酸種蛋塔。建議手提上機以免碎裂。", teacher: "退房並領取代訂蛋塔。", transport: "就在飯店隔壁商場" },
                         { id: "4-2", time: "15:45", title: "前往機場 (最晚 16:00)", loc: "沙田市中心站", map: "沙田市中心巴士總站", student: "最晚 16:00 要上 A41！超時有趕不上飛機風險。", teacher: "同行前往機場。", transport: "Citybus A41 (約 60 分鐘)" },
                         { id: "4-3", time: "19:40", title: "搭機回台 (長榮 BR872)", loc: "HKG T1", map: "香港國際機場", student: "順利圓滿結束香港學術之旅！", teacher: "平安返台。", transport: "17:30 前完成安檢" }
                     ]
@@ -163,9 +162,9 @@
             ];
 
             const exploreRoutes = [
-                { name: "路線 A", title: "尖沙咀文化散步", tags: ["夜景", "星光大道"], desc: "適合看維港景、星光大道拍照，晚上 8 點看燈光秀。" },
-                { name: "路線 B", title: "深水埗在地美食", tags: ["豆花", "挖寶"], desc: "逛鴨寮街電子產品，吃公和荳品廠豆腐花。" },
-                { name: "路線 C", title: "旺角掃街天堂", tags: ["球鞋", "雞蛋仔"], desc: "波鞋街買運動鞋、女人街逛小物，大吃街頭小食。" }
+                { name: "路線 A", title: "尖沙咀文化散步", tags: ["夜景", "星光大道"], desc: "適合看維港景、星光大道拍照，晚上 8 點有幻彩詠香江。" },
+                { name: "路線 B", title: "深水埗在地美食", tags: ["豆花", "挖寶"], desc: "適合想逛鴨寮街挖寶，品嚐公和荳品廠豆腐花的人。" },
+                { name: "路線 C", title: "旺角掃街天堂", tags: ["球鞋", "雞蛋仔"], desc: "適合想買運動鞋、吃雞蛋仔與女人街逛小物的人。" }
             ];
 
             return (
@@ -210,7 +209,7 @@
                                             <div key={event.id} className="relative mb-4">
                                                 <div className={`absolute -left-[1.95rem] top-1.5 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm z-10 ${role === 'teacher' ? 'bg-rose-400' : 'bg-sky-400'}`}></div>
                                                 <div onClick={() => setExpandedEvent(expandedEvent === event.id ? null : event.id)} className={`bg-white rounded-3xl p-4 border-2 transition-all cursor-pointer ${expandedEvent === event.id ? 'border-amber-100 shadow-md ring-4 ring-amber-50' : 'border-slate-50'}`}>
-                                                    <div className="flex justify-between items-center mb-1 text-[10px] font-black text-slate-300 italic">
+                                                    <div className="flex justify-between items-center mb-1 text-[10px] font-black text-slate-300">
                                                         <span>{event.time}</span>
                                                         {expandedEvent === event.id ? <SafeIcon name="ChevronUp" size={14} /> : <SafeIcon name="ChevronDown" size={14} />}
                                                     </div>
@@ -250,7 +249,7 @@
                                                     setHkd(val);
                                                     setTwd(val ? (parseFloat(val) * 4.15).toFixed(1) : '');
                                                 }} 
-                                                className="w-full bg-white p-3 rounded-xl font-black text-sm border-2 border-yellow-200 outline-none focus:border-yellow-400 transition-colors" 
+                                                className="w-full bg-white p-3 rounded-xl font-black text-sm border-2 border-yellow-200 outline-none" 
                                             />
                                             <span className="absolute right-4 top-3.5 text-[10px] font-bold text-yellow-300 uppercase">HKD</span>
                                         </div>
@@ -288,7 +287,7 @@
                                         <h4 className="font-black text-orange-700 flex items-center gap-2 mb-2"><SafeIcon name="Coffee" size={16}/> 蛋塔攻略提醒</h4>
                                         <p className="text-[11px] font-bold text-orange-600 leading-relaxed">
                                             🥨 Bakehouse：沙田店就在飯店樓下商場，建議回台當天採買最鮮。<br/>
-                                            🍮 Hashtag B：雲朵外型極吸睛，4/21 尖沙咀自由行時可順路購入。
+                                            🍮 Hashtag B：雲朵外型吸睛，4/21 尖沙咀自由行時可順路購入。
                                         </p>
                                     </div>
                                 </div>
