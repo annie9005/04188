@@ -1,358 +1,348 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Plane, MapPin, Clock, Briefcase, GraduationCap, 
-  CheckSquare, Square, ChevronDown, ChevronUp, 
-  Navigation, Coffee, AlertCircle, Calendar, Train,
-  RefreshCw, DollarSign, Heart, Star, Info, Menu, X, Home, Map
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🇭🇰 2026 香港研討會手帳 (AI 修正版)</title>
+    
+    <!-- 1. 載入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 2. 載入 React 核心 (UMD) -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- 3. 載入 Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- 4. 載入 Lucide 圖示庫 -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide-react@latest"></script>
 
-// --- 動態浮現組件 ---
-const FadeIn = ({ children, delay = 0 }) => {
-  const [isVisible, setVisible] = useState(false);
-  const ref = useRef();
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        setVisible(true);
-        observer.unobserve(ref.current);
-      }
-    }, { threshold: 0.1 });
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div ref={ref} className={`transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`} style={{ transitionDelay: `${delay}ms` }}>
-      {children}
-    </div>
-  );
-};
-
-export default function App() {
-  const [activeTab, setActiveTab] = useState('itinerary'); // 'itinerary' | 'tools' | 'guide' | 'teacher'
-  const [activeDay, setActiveDay] = useState(0);
-  const [role, setRole] = useState('student');
-  const [expandedEvent, setExpandedEvent] = useState(null);
-  const [hkd, setHkd] = useState('');
-  const [twd, setTwd] = useState('');
-  const [checklist, setChecklist] = useState([
-    { id: 1, text: '護照 / 台胞證 ✈️', checked: false },
-    { id: 2, text: '八達通 (實體或 Apple Pay) 💳', checked: false },
-    { id: 3, text: '研討會名牌 & 論文 PPT 💻', checked: false },
-    { id: 4, text: '英規轉接頭 (三腳) 🔌', checked: false },
-    { id: 5, text: '止痛藥/個人藥品 💊', checked: false },
-  ]);
-
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, min: 0 });
-
-  // 倒數計時
-  useEffect(() => {
-    const target = new Date('2026-04-20T08:00:00');
-    const timer = setInterval(() => {
-      const diff = target - new Date();
-      if (diff <= 0) { clearInterval(timer); return; }
-      setTimeLeft({
-        days: Math.floor(diff / 86400000),
-        hours: Math.floor((diff / 3600000) % 24),
-        min: Math.floor((diff / 60000) % 60)
-      });
-    }, 60000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const handleHkdChange = (val) => {
-    setHkd(val);
-    setTwd(val ? (parseFloat(val) * 4.15).toFixed(1) : '');
-  };
-
-  const itinerary = [
-    {
-      date: "4/20 (一)",
-      title: "抵達香港 · 安頓日",
-      accent: "bg-rose-400",
-      events: [
-        { id: "1-1", time: "08:15", title: "桃園機場 T2 集合", loc: "長榮航空櫃檯", map: "桃園機場第二航廈", student: "找助教領取名牌，行李直掛。", teacher: "商務艙櫃檯報到，助教已備妥入境表。", transport: "長榮 BR867 (10:15起飛)" },
-        { id: "1-2", time: "12:05", title: "抵達香港國際機場", loc: "抵達大堂", map: "香港國際機場", student: "集合後前往搭乘 A41 機場巴士。", teacher: "專車已在 A 出口候機。", transport: "A41 巴士 (HK$23.4)" },
-        { id: "1-3", time: "15:30", title: "帝都酒店 Check-in", loc: "Royal Park Hotel", map: "Royal Park Hotel Hong Kong", student: "分發房卡，四人一間，休息片刻。", teacher: "行政客房入住。", transport: "沙田市中心站下車步行 5 分鐘" },
-        { id: "1-4", time: "17:30", title: "晚餐：二鍋頭 (沙田)", loc: "好運中心", map: "沙田二鍋頭", student: "火鍋吃到飽，慶祝順利抵達！", teacher: "師生聚餐。", transport: "步行約 11 分鐘" }
-      ]
-    },
-    {
-      date: "4/21 (二)",
-      title: "碩二報告 · 尖沙咀",
-      accent: "bg-sky-400",
-      events: [
-        { id: "2-1", time: "07:15", title: "早餐：紅茶冰室", loc: "沙田店", map: "紅茶冰室 沙田", student: "全體 07:00 大廳集合。", teacher: "與師生共進港式早茶。", transport: "步行 5 分鐘" },
-        { id: "2-2", time: "10:00", title: "研討會報告 (碩二)", loc: "EdUHK ICLT", map: "The Education University of Hong Kong", student: "正式發表，請著正式服裝。", teacher: "指導學生發表。", transport: "東鐵線大學站轉 74K" },
-        { id: "2-3", time: "13:30", title: "自由行：尖沙咀/深水埗", loc: "市區探索", map: "尖沙咀星光大道", student: "可選 A/B/C 三條路線，詳見地圖分頁。", teacher: "老師個人行程啟動。", transport: "東鐵線直達尖東" }
-      ]
-    },
-    {
-      date: "4/22 (三)",
-      title: "碩一報告 · 晚宴",
-      accent: "bg-indigo-400",
-      events: [
-        { id: "3-1", time: "09:30", title: "早餐：牛奶冰室", loc: "沙田站旁", map: "牛奶冰室 沙田", student: "碩一同學保持放鬆心情！", teacher: "同行早餐。", transport: "步行 3 分鐘" },
-        { id: "3-2", time: "12:00", title: "研討會報告 (碩一)", loc: "EdUHK", map: "The Education University of Hong Kong", student: "碩一出擊！加油加油！", teacher: "評審與指導。", transport: "交通同前日" },
-        { id: "3-3", time: "18:30", title: "研討會晚宴", loc: "Bafang Zhan 八方棧", map: "八方棧", student: "必帶胸牌！接駁巴士在校門口。", teacher: "自由活動或個人晚宴。", transport: "研討會接駁巴士" }
-      ]
-    },
-    {
-      date: "4/23 (四)",
-      title: "蛋塔採購 · 賦歸",
-      accent: "bg-orange-400",
-      events: [
-        { id: "4-1", time: "10:00", title: "Bakehouse 採買", loc: "新城市廣場店", map: "Bakehouse Sha Tin", student: "最後衝刺！蛋塔建議手提上機。", teacher: "助教代訂完成，退房領取。", transport: "步行 3 分鐘" },
-        { id: "4-2", time: "15:45", title: "搭車前往機場", loc: "沙田巴士總站", map: "沙田市中心巴士總站", student: "最晚 16:00 要上 A41！", teacher: "同行前往。", transport: "A41 巴士 (預計 60 分鐘)" },
-        { id: "4-3", time: "19:40", title: "搭機回台", loc: "HKG T1", map: "香港國際機場", student: "長榮 BR872，回溫暖的家。", teacher: "圓滿結束。", transport: "17:30 前完成報到" }
-      ]
-    }
-  ];
-
-  const routes = [
-    { title: "路線 A: 尖沙咀", tags: ["夜景", "星光大道", "文化"], desc: "適合想看維港與逛歷史博物館的人。" },
-    { title: "路線 B: 深水埗", tags: ["在地", "電子街", "豆腐花"], desc: "適合想體驗老香港文化與挖寶的人。" },
-    { title: "路線 C: 旺角", tags: ["購物", "波鞋街", "掃街小吃"], desc: "適合想買鞋與大啖街頭美食的人。" }
-  ];
-
-  return (
-    <div className="max-w-md mx-auto min-h-screen bg-[#FFF9F5] text-slate-800 pb-24 shadow-2xl relative">
-      
-      {/* 頂部裝飾 */}
-      <div className="bg-white px-6 pt-12 pb-6 rounded-b-[3rem] shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-rose-100 rounded-full blur-3xl -z-0"></div>
-        <div className="relative z-10">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h1 className="text-2xl font-black flex items-center gap-2">
-                🇭🇰 2026 香港手帳 <Heart className="text-rose-400 fill-rose-400" size={18} />
-              </h1>
-              <p className="text-xs font-bold text-slate-400 tracking-widest mt-1 uppercase italic">Research & Foodie Tour</p>
-            </div>
-            <div className="bg-amber-50 border border-amber-200 px-3 py-1 rounded-2xl flex flex-col items-center">
-              <span className="text-[10px] font-black text-amber-500 uppercase">Departure In</span>
-              <span className="text-sm font-black text-amber-600 font-mono">{timeLeft.days}D {timeLeft.hours}H</span>
-            </div>
-          </div>
-          
-          {/* 身分切換 */}
-          <div className="flex bg-slate-100 p-1 rounded-2xl">
-            <button onClick={() => setRole('student')} className={`flex-1 py-2 rounded-xl text-xs font-black transition-all ${role === 'student' ? 'bg-white shadow-sm text-sky-500' : 'text-slate-400'}`}>學生版</button>
-            <button onClick={() => setRole('teacher')} className={`flex-1 py-2 rounded-xl text-xs font-black transition-all ${role === 'teacher' ? 'bg-white shadow-sm text-rose-500' : 'text-slate-400'}`}>老師版</button>
-          </div>
-        </div>
-      </div>
-
-      {/* 主內容區 */}
-      <div className="px-6 py-6">
-        
-        {/* 行程分頁 */}
-        {activeTab === 'itinerary' && (
-          <div className="space-y-6">
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              {itinerary.map((day, idx) => (
-                <button 
-                  key={idx} 
-                  onClick={() => setActiveDay(idx)}
-                  className={`flex-shrink-0 px-5 py-2.5 rounded-2xl text-xs font-black transition-all border-2 ${activeDay === idx ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-400 border-slate-100'}`}
-                >
-                  {day.date}
-                </button>
-              ))}
-            </div>
-
-            <FadeIn key={activeDay}>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 ml-2 mb-2">
-                  <div className={`w-3 h-8 rounded-full ${itinerary[activeDay].accent} shadow-sm`}></div>
-                  <h2 className="text-lg font-black">{itinerary[activeDay].title}</h2>
-                </div>
-
-                <div className="space-y-4 relative ml-4 border-l-4 border-dashed border-slate-200 pl-6">
-                  {itinerary[activeDay].events.map((event) => {
-                    const isOpen = expandedEvent === event.id;
-                    return (
-                      <div key={event.id} className="relative">
-                        <div className={`absolute -left-[2.15rem] top-1.5 w-4 h-4 rounded-full border-2 border-white shadow-sm z-10 ${role === 'teacher' ? 'bg-rose-400' : 'bg-sky-400'}`}></div>
-                        <div 
-                          onClick={() => setExpandedEvent(isOpen ? null : event.id)}
-                          className={`bg-white rounded-3xl p-4 border-2 transition-all cursor-pointer ${isOpen ? 'border-amber-200 ring-4 ring-amber-50 shadow-md' : 'border-slate-50'}`}
-                        >
-                          <div className="flex justify-between items-start mb-1">
-                            <span className="text-[10px] font-black text-slate-300 font-mono italic">{event.time}</span>
-                            {isOpen ? <ChevronUp size={16} className="text-slate-300" /> : <ChevronDown size={16} className="text-slate-300" />}
-                          </div>
-                          <h4 className="font-black text-slate-700 text-md">{event.title}</h4>
-                          <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1 mt-0.5"><MapPin size={10} /> {event.loc}</p>
-                          
-                          <div className={`mt-3 p-3 rounded-2xl text-[11px] font-bold leading-relaxed border ${role === 'teacher' ? 'bg-rose-50 text-rose-700 border-rose-100' : 'bg-sky-50 text-sky-700 border-sky-100'}`}>
-                            {role === 'teacher' ? event.teacher : event.student}
-                          </div>
-
-                          {isOpen && (
-                            <div className="mt-4 space-y-3 pt-3 border-t border-slate-50">
-                              <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 bg-slate-50 p-2 rounded-lg">
-                                <Train size={12} /> {event.transport}
-                              </div>
-                              <div className="flex gap-2">
-                                <a 
-                                  href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(event.map)}`}
-                                  target="_blank" rel="noopener noreferrer"
-                                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-slate-800 text-white rounded-xl text-[10px] font-black"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <Navigation size={12} /> 開始導航
-                                </a>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </FadeIn>
-          </div>
-        )}
-
-        {/* 工具分頁 */}
-        {activeTab === 'tools' && (
-          <div className="space-y-6">
-            <h2 className="text-xl font-black flex items-center gap-2 px-2"><DollarSign className="text-amber-500" /> 行前工具箱</h2>
-            
-            <FadeIn>
-              <div className="bg-[#FFFEE5] rounded-[2.5rem] p-6 shadow-sm border-2 border-yellow-100">
-                <h3 className="text-sm font-black text-yellow-600 mb-4 flex items-center gap-2"><RefreshCw size={16} /> 即時匯率計算 (1:4.15)</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-yellow-600 ml-2 uppercase">港幣 HKD</label>
-                    <input type="number" value={hkd} onChange={(e) => handleHkdChange(e.target.value)} placeholder="0.0" className="w-full bg-white border-2 border-yellow-200 rounded-2xl px-4 py-3 font-bold text-slate-700" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-orange-600 ml-2 uppercase">台幣 TWD</label>
-                    <input type="number" value={twd} readOnly className="w-full bg-white border-2 border-orange-100 rounded-2xl px-4 py-3 font-bold text-orange-500" />
-                  </div>
-                </div>
-              </div>
-            </FadeIn>
-
-            <FadeIn delay={100}>
-              <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border-2 border-slate-50">
-                <h3 className="text-sm font-black text-sky-500 mb-4 flex items-center gap-2"><CheckSquare size={16} /> 檢查清單</h3>
-                <div className="space-y-2">
-                  {checklist.map(item => (
-                    <div 
-                      key={item.id} 
-                      onClick={() => setChecklist(checklist.map(i => i.id === item.id ? {...i, checked: !i.checked} : i))}
-                      className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-100 cursor-pointer"
-                    >
-                      {item.checked ? <CheckSquare size={18} className="text-sky-400" /> : <Square size={18} className="text-slate-200" />}
-                      <span className={`text-[12px] font-bold ${item.checked ? 'text-slate-300 line-through' : 'text-slate-600'}`}>{item.text}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </FadeIn>
-          </div>
-        )}
-
-        {/* 攻略分頁 */}
-        {activeTab === 'guide' && (
-          <div className="space-y-6">
-            <h2 className="text-xl font-black flex items-center gap-2 px-2"><Star className="text-orange-400" /> 必吃與探索</h2>
-            
-            <FadeIn>
-              <div className="bg-white rounded-[2rem] p-5 border-2 border-orange-50 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-5"><Coffee size={60} /></div>
-                <h3 className="text-md font-black text-orange-500 mb-3">🍮 蛋塔採購雙雄</h3>
-                <div className="space-y-3">
-                  <div className="bg-orange-50/50 p-4 rounded-2xl border border-orange-100">
-                    <p className="font-black text-slate-700 text-sm">Bakehouse (酸種塔)</p>
-                    <p className="text-[10px] font-bold text-slate-500 mt-1">沙田分店就在新城市廣場！最後一天去買最新鮮。</p>
-                  </div>
-                  <div className="bg-amber-50/50 p-4 rounded-2xl border border-amber-100">
-                    <p className="font-black text-slate-700 text-sm">Hashtag B (雲朵塔)</p>
-                    <p className="text-[10px] font-bold text-slate-500 mt-1">視覺效果最強，推薦在 4/21 尖沙咀自由行時購買。</p>
-                  </div>
-                </div>
-              </div>
-            </FadeIn>
-
-            <FadeIn delay={100}>
-              <h3 className="text-sm font-black px-2 mt-4 uppercase tracking-wider text-slate-400">學生自由行路線建議</h3>
-              <div className="grid gap-3 mt-2">
-                {routes.map((r, i) => (
-                  <div key={i} className="bg-white p-4 rounded-3xl border-2 border-slate-50 shadow-sm">
-                    <div className="flex justify-between items-center mb-2">
-                      <h4 className="font-black text-slate-700">{r.title}</h4>
-                      <div className="flex gap-1">
-                        {r.tags.map((t, ti) => <span key={ti} className="bg-sky-50 text-sky-400 text-[8px] px-2 py-0.5 rounded-full font-black border border-sky-100">{t}</span>)}
-                      </div>
-                    </div>
-                    <p className="text-[11px] font-bold text-slate-500 leading-relaxed">{r.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </FadeIn>
-          </div>
-        )}
-
-        {/* 老師懶人包 */}
-        {activeTab === 'teacher' && (
-          <div className="space-y-6">
-            <h2 className="text-xl font-black flex items-center gap-2 px-2 text-rose-500"><AlertCircle /> 老師專屬資訊</h2>
-            <div className="bg-rose-50 p-5 rounded-[2.5rem] border-2 border-rose-100">
-              <p className="text-xs font-black text-rose-600 mb-4 leading-relaxed">
-                📌 老師您好，本次行程已為您與師母安排舒適交通。每日早餐已預訂，請於指定時間在飯店大廳集合即可。
-              </p>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 bg-white p-4 rounded-2xl border border-rose-100 shadow-sm">
-                  <div className="bg-rose-400 text-white p-2 rounded-xl"><Plane size={18} /></div>
-                  <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase">航班編號 (長榮)</p>
-                    <p className="text-sm font-black">去 BR867 / 回 BR872</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 bg-white p-4 rounded-2xl border border-rose-100 shadow-sm">
-                  <div className="bg-amber-400 text-white p-2 rounded-xl"><Star size={18} /></div>
-                  <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase">重點發表時段</p>
-                    <p className="text-sm font-black">4/21 10:00 & 4/22 12:00</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-      </div>
-
-      {/* 底部導航欄 - App 核心體驗 */}
-      <div className="fixed bottom-0 w-full max-w-md bg-white/90 backdrop-blur-xl border-t border-slate-100 px-6 py-3 flex justify-between items-center z-50">
-        <button onClick={() => setActiveTab('itinerary')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'itinerary' ? 'text-sky-500 scale-110' : 'text-slate-300'}`}>
-          <Home size={22} strokeWidth={activeTab === 'itinerary' ? 3 : 2} />
-          <span className="text-[9px] font-black uppercase tracking-tighter">行程</span>
-        </button>
-        <button onClick={() => setActiveTab('tools')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'tools' ? 'text-amber-500 scale-110' : 'text-slate-300'}`}>
-          <RefreshCw size={22} strokeWidth={activeTab === 'tools' ? 3 : 2} />
-          <span className="text-[9px] font-black uppercase tracking-tighter">工具</span>
-        </button>
-        <button onClick={() => setActiveTab('guide')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'guide' ? 'text-indigo-500 scale-110' : 'text-slate-300'}`}>
-          <Map size={22} strokeWidth={activeTab === 'guide' ? 3 : 2} />
-          <span className="text-[9px] font-black uppercase tracking-tighter">地圖</span>
-        </button>
-        <button onClick={() => setActiveTab('teacher')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'teacher' ? 'text-rose-500 scale-110' : 'text-slate-300'}`}>
-          <Briefcase size={22} strokeWidth={activeTab === 'teacher' ? 3 : 2} />
-          <span className="text-[9px] font-black uppercase tracking-tighter">老師</span>
-        </button>
-      </div>
-
-      <style dangerouslySetInnerHTML={{ __html: `
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; background-color: #FFF9F5; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}} />
-    </div>
-  );
-}
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fadeIn { animation: fadeIn 0.4s ease-out forwards; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        
+        /**
+         * 修正後的圖示載入組件 (防止 React Error #130 & Infinity 宣告錯誤)
+         * 避免使用解構賦值，直接從全域物件獲取圖示組件
+         */
+        const SafeIcon = ({ name, size = 16, className = "", strokeWidth = 2 }) => {
+            const LucideLib = window.lucideReact || window.Lucide || {};
+            // 嘗試不同的命名規範 (PascalCase)，並避開直接變數宣告
+            const IconComponent = LucideLib[name] || LucideLib[name.charAt(0).toUpperCase() + name.slice(1)];
+            
+            if (!IconComponent) {
+                return <div className={`inline-block rounded-full bg-gray-200 ${className}`} style={{ width: size, height: size }}></div>;
+            }
+            return <IconComponent size={size} className={className} strokeWidth={strokeWidth} />;
+        };
+
+        // --- Gemini API 設定 ---
+        const apiKey = ""; 
+        const MODEL_NAME = "gemini-2.5-flash-preview-09-2025";
+
+        const callGemini = async (prompt, systemPrompt = "") => {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+
+            const fetchWithRetry = async (retries = 3, delay = 1000) => {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) throw new Error('API Error');
+                    const data = await response.json();
+                    return data.candidates?.[0]?.content?.parts?.[0]?.text;
+                } catch (e) {
+                    if (retries > 0) {
+                        await new Promise(r => setTimeout(r, delay));
+                        return fetchWithRetry(retries - 1, delay * 2);
+                    }
+                    throw e;
+                }
+            };
+            return fetchWithRetry();
+        };
+
+        function App() {
+            const [activeTab, setActiveTab] = useState('itinerary');
+            const [activeDay, setActiveDay] = useState(0);
+            const [role, setRole] = useState('student');
+            const [expandedEvent, setExpandedEvent] = useState(null);
+            const [hkd, setHkd] = useState('');
+            const [twd, setTwd] = useState('');
+            const [aiLoading, setAiLoading] = useState(false);
+            const [aiResponse, setAiResponse] = useState("");
+            const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0 });
+
+            useEffect(() => {
+                const target = new Date('2026-04-20T08:00:00');
+                const update = () => {
+                    const diff = target - new Date();
+                    if (diff > 0) {
+                        setTimeLeft({
+                            days: Math.floor(diff / 86400000),
+                            hours: Math.floor((diff / 3600000) % 24)
+                        });
+                    }
+                };
+                update();
+                const timer = setInterval(update, 60000);
+                return () => clearInterval(timer);
+            }, []);
+
+            const askAI = async (type) => {
+                setAiLoading(true);
+                setAiResponse("");
+                let prompt = "";
+                if (type === 'cantonese') prompt = "請教我 3 個在香港茶餐廳點餐或學術會議中與人打招呼最實用的粵語句子，包含拼音、中文解釋。";
+                else prompt = `我今天在香港的行程主題是「${itinerary[activeDay].title}」，請根據行程給我 2 個關於交通避雷或周邊必吃美食的建議。`;
+
+                try {
+                    const res = await callGemini(prompt, "你是一位專業的香港旅遊小秘書，講話風格要可愛且富有耐心，適時加入表情符號。");
+                    setAiResponse(res);
+                } catch (e) {
+                    setAiResponse("哎呀！AI 助手暫時迷路了，請再試一次看看 😅");
+                } finally {
+                    setAiLoading(false);
+                }
+            };
+
+            const itinerary = [
+                {
+                    date: "4/20 (一)", title: "抵達香港 · 安頓日", accent: "bg-rose-400",
+                    events: [
+                        { id: "1-1", time: "10:15", title: "搭機啟程 (長榮 BR867)", loc: "桃園機場 T2", map: "桃園機場第二航廈", student: "提前抵達長榮櫃檯，找助教領名牌。", teacher: "商務艙櫃檯報到，助教已備妥表格。", transport: "建議 08:15 集合" },
+                        { id: "1-2", time: "12:05", title: "抵達香港國際機場", loc: "機場大廳", map: "香港國際機場", student: "集合後前往巴士站，搭乘 A41 直達沙田。", teacher: "專車於 A 出口等候接機。", transport: "A41 巴士 (車資 HK$23.4)" },
+                        { id: "1-3", time: "14:00", title: "史努比開心世界 (Snoopy's World)", loc: "新城市廣場 3 樓", map: "史努比開心世界", student: "免費入場。獨木舟探趣開放至 18:00，建議提早排隊。", teacher: "可與師母在商場悠閒逛逛，新城市廣場共 3 期。", transport: "步行 3 分鐘" },
+                        { id: "1-4", time: "17:30", title: "晚餐：二鍋頭火鍋", loc: "好運中心", map: "沙田二鍋頭", student: "全體師生聚餐！火鍋吃到飽限時 120 分鐘。", teacher: "師生聚餐，大口吃肉補充體力。", transport: "沿新城市廣場步行約 11 分鐘" }
+                    ]
+                },
+                {
+                    date: "4/21 (二)", title: "碩二報告 · 自由行", accent: "bg-sky-400",
+                    events: [
+                        { id: "2-1", time: "07:15", title: "早餐：紅茶冰室", loc: "沙田店", map: "紅茶冰室 沙田", student: "全體 07:00 大廳集合，老師同行。必點：奶茶、炒蛋。", teacher: "同行早餐，體驗地道冰室文化。", transport: "步行 5 分鐘" },
+                        { id: "2-2", time: "10:00", title: "研討會發表 (碩二)", loc: "EdUHK ICLT", map: "香港教育大學", student: "正式發表。請穿正式服裝。加油！", teacher: "指導碩二學生發表，全程出席。", transport: "東鐵綫至大埔墟站轉 74K 巴士" },
+                        { id: "2-3", time: "13:30", title: "自由行：尖沙咀/深水埗", loc: "市區探索", map: "尖沙咀星光大道", student: "老師開始個人行程，學生進入自由模式 (路線 A/B/C)。", teacher: "老師下午為個人行程時間。", transport: "東鐵綫直達尖東站" }
+                    ]
+                },
+                {
+                    date: "4/22 (三)", title: "碩一報告 · 官方晚宴", accent: "bg-indigo-400",
+                    events: [
+                        { id: "3-1", time: "09:30", title: "早餐：牛奶冰室", loc: "沙田站旁", map: "牛奶冰室 沙田", student: "保持放鬆心情迎接發表！", teacher: "師生同行早餐。", transport: "步行 3 分鐘" },
+                        { id: "3-2", time: "12:00", title: "研討會發表 (碩一)", loc: "EdUHK", map: "香港教育大學", student: "碩一發表時段。加油加油！", teacher: "評審與指導發表。", transport: "交通同前日" },
+                        { id: "3-3", time: "18:30", title: "研討會晚宴：八方棧", loc: "Bafang Zhan", map: "八方棧", student: "必帶胸牌！接駁巴士在校門口。老師此時不參與。", teacher: "自由活動或與師母個人行程。", transport: "接駁巴士 (需出示胸牌)" }
+                    ]
+                },
+                {
+                    date: "4/23 (四)", title: "最後補貨 · 賦歸", accent: "bg-orange-400",
+                    events: [
+                        { id: "4-1", time: "10:00", title: "蛋塔採購 (Bakehouse)", loc: "新城市廣場店", map: "Bakehouse 沙田", student: "最後衝刺！推酸種蛋塔。建議手提上機。", teacher: "領取代訂蛋塔。", transport: "就在飯店隔壁商場" },
+                        { id: "4-2", time: "15:45", title: "前往機場 (最晚 16:00)", loc: "沙田市中心站", map: "沙田市中心巴士總站", student: "最晚 16:00 要上 A41！超時有趕不上飛機風險。", teacher: "同行前往機場。", transport: "Citybus A41 (約 60 分鐘)" },
+                        { id: "4-3", time: "19:40", title: "搭機回台 (長榮 BR872)", loc: "HKG T1", map: "香港國際機場", student: "順利圓滿結束香港學術之旅！", teacher: "平安返台。", transport: "17:30 前完成安檢" }
+                    ]
+                }
+            ];
+
+            const exploreRoutes = [
+                { name: "路線 A", title: "尖沙咀文化散步", tags: ["夜景", "星光大道"], desc: "適合看維港景、星光大道拍照，晚上 8 點看燈光秀。" },
+                { name: "路線 B", title: "深水埗在地美食", tags: ["豆花", "挖寶"], desc: "逛鴨寮街電子產品，吃公和荳品廠豆腐花。" },
+                { name: "路線 C", title: "旺角掃街天堂", tags: ["球鞋", "雞蛋仔"], desc: "波鞋街買運動鞋、女人街逛小物，大吃街頭小食。" }
+            ];
+
+            return (
+                <div className="max-w-md mx-auto min-h-screen pb-24 shadow-2xl relative bg-[#FFF9F5]">
+                    {/* Header */}
+                    <div className="bg-white px-6 pt-12 pb-6 rounded-b-[3rem] shadow-sm relative overflow-hidden text-center">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-rose-100 rounded-full blur-3xl -z-0"></div>
+                        <div className="relative z-10">
+                            <h1 className="text-2xl font-black flex items-center justify-center gap-2">
+                                🇭🇰 2026 香港手帳 <SafeIcon name="Heart" className="text-rose-400 fill-rose-400" size={18} />
+                            </h1>
+                            <div className="mt-4 flex justify-center gap-3">
+                                <div className="bg-amber-50 px-4 py-2 rounded-2xl border border-amber-200 shadow-sm">
+                                    <p className="text-[10px] font-black text-amber-500 uppercase">Departure</p>
+                                    <p className="text-sm font-black text-amber-600">{timeLeft.days}D {timeLeft.hours}H</p>
+                                </div>
+                            </div>
+                            <div className="flex bg-slate-100 p-1 rounded-2xl mt-4">
+                                <button onClick={() => setRole('student')} className={`flex-1 py-2 rounded-xl text-xs font-black transition-all ${role === 'student' ? 'bg-white shadow-sm text-sky-500' : 'text-slate-400'}`}>同學版</button>
+                                <button onClick={() => setRole('teacher')} className={`flex-1 py-2 rounded-xl text-xs font-black transition-all ${role === 'teacher' ? 'bg-white shadow-sm text-rose-500' : 'text-slate-400'}`}>老師版</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="px-6 py-6">
+                        {activeTab === 'itinerary' && (
+                            <div className="animate-fadeIn">
+                                <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide mb-4">
+                                    {itinerary.map((day, idx) => (
+                                        <button key={idx} onClick={() => setActiveDay(idx)} className={`flex-shrink-0 px-5 py-2 rounded-2xl text-xs font-black transition-all border-2 ${activeDay === idx ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-400 border-slate-100'}`}>
+                                            {day.date}
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <div className={`w-2 h-6 rounded-full ${itinerary[activeDay].accent}`}></div>
+                                        <h2 className="text-lg font-black">{itinerary[activeDay].title}</h2>
+                                    </div>
+                                    <div className="space-y-4 border-l-2 border-dashed border-slate-200 ml-3 pl-6">
+                                        {itinerary[activeDay].events.map((event) => (
+                                            <div key={event.id} className="relative mb-4">
+                                                <div className={`absolute -left-[1.95rem] top-1.5 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm z-10 ${role === 'teacher' ? 'bg-rose-400' : 'bg-sky-400'}`}></div>
+                                                <div onClick={() => setExpandedEvent(expandedEvent === event.id ? null : event.id)} className={`bg-white rounded-3xl p-4 border-2 transition-all cursor-pointer ${expandedEvent === event.id ? 'border-amber-100 shadow-md ring-4 ring-amber-50' : 'border-slate-50'}`}>
+                                                    <div className="flex justify-between items-center mb-1 text-[10px] font-black text-slate-300 italic">
+                                                        <span>{event.time}</span>
+                                                        {expandedEvent === event.id ? <SafeIcon name="ChevronUp" size={14} /> : <SafeIcon name="ChevronDown" size={14} />}
+                                                    </div>
+                                                    <h4 className="font-black text-slate-700 text-sm">{event.title}</h4>
+                                                    <div className={`mt-2 p-3 rounded-2xl text-[11px] font-bold border ${role === 'teacher' ? 'bg-rose-50 text-rose-700 border-rose-100' : 'bg-sky-50 text-sky-700 border-sky-100'}`}>
+                                                        {role === 'teacher' ? event.teacher : event.student}
+                                                    </div>
+                                                    {expandedEvent === event.id && (
+                                                        <div className="mt-4 pt-4 border-t border-slate-50 space-y-3 animate-fadeIn">
+                                                            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400"><SafeIcon name="Train" size={12}/> {event.transport}</div>
+                                                            <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(event.map)}`} target="_blank" className="flex items-center justify-center gap-2 py-2.5 bg-slate-800 text-white rounded-xl text-[10px] font-black" onClick={e => e.stopPropagation()}>
+                                                                <SafeIcon name="Navigation" size={12} /> 開始導航
+                                                            </a>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'tools' && (
+                            <div className="animate-fadeIn space-y-4">
+                                <h2 className="text-xl font-black flex items-center gap-2 px-2 text-amber-500"><SafeIcon name="RefreshCw" size={20} /> 算帳工具箱</h2>
+                                <div className="bg-[#FFFEE5] rounded-[2rem] p-6 border-2 border-yellow-100 shadow-sm">
+                                    <h3 className="text-xs font-black text-yellow-600 mb-4 flex items-center gap-2 tracking-widest uppercase"><SafeIcon name="DollarSign" size={14} /> 匯率換算 (1:4.15)</h3>
+                                    <div className="space-y-3">
+                                        <div className="relative">
+                                            <input 
+                                                type="number" 
+                                                placeholder="HKD 港幣" 
+                                                value={hkd}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    setHkd(val);
+                                                    setTwd(val ? (parseFloat(val) * 4.15).toFixed(1) : '');
+                                                }} 
+                                                className="w-full bg-white p-3 rounded-xl font-black text-sm border-2 border-yellow-200 outline-none focus:border-yellow-400 transition-colors" 
+                                            />
+                                            <span className="absolute right-4 top-3.5 text-[10px] font-bold text-yellow-300 uppercase">HKD</span>
+                                        </div>
+                                        <div className="flex justify-center">
+                                            <SafeIcon name="RefreshCw" size={16} className="text-yellow-200" />
+                                        </div>
+                                        <div className="bg-white/50 p-3 rounded-xl border-2 border-orange-100 text-center">
+                                            <span className="text-xs font-bold text-orange-300 uppercase block mb-1 tracking-wider text-[9px]">約等於台幣</span>
+                                            <span className="text-xl font-black text-orange-500">NT$ {twd || '0'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'explore' && (
+                            <div className="animate-fadeIn space-y-6">
+                                <h2 className="text-xl font-black flex items-center gap-2 px-2 text-rose-500"><SafeIcon name="Star" size={20} /> 景點與美食</h2>
+                                <div className="space-y-4">
+                                    <h3 className="text-sm font-black text-slate-400 px-2 uppercase tracking-widest">自由行建議路線</h3>
+                                    {exploreRoutes.map((route, i) => (
+                                        <div key={i} className="bg-white p-5 rounded-[2rem] border-2 border-slate-100 shadow-sm">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <h4 className="font-black text-slate-800">{route.name}：{route.title}</h4>
+                                                <div className="flex gap-1">
+                                                    {route.tags.map((t, ti) => (
+                                                        <span key={ti} className="text-[8px] bg-sky-50 text-sky-500 px-2 py-0.5 rounded-full font-bold border border-sky-100">{t}</span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <p className="text-[11px] font-bold text-slate-500 leading-relaxed">{route.desc}</p>
+                                        </div>
+                                    ))}
+                                    <div className="bg-orange-50 p-5 rounded-[2rem] border-2 border-orange-100 shadow-sm">
+                                        <h4 className="font-black text-orange-700 flex items-center gap-2 mb-2"><SafeIcon name="Coffee" size={16}/> 蛋塔攻略提醒</h4>
+                                        <p className="text-[11px] font-bold text-orange-600 leading-relaxed">
+                                            🥨 Bakehouse：沙田店就在飯店樓下商場，建議回台當天採買最鮮。<br/>
+                                            🍮 Hashtag B：雲朵外型極吸睛，4/21 尖沙咀自由行時可順路購入。
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'ai' && (
+                            <div className="animate-fadeIn space-y-4">
+                                <h2 className="text-xl font-black flex items-center gap-2 px-2 text-indigo-500"><SafeIcon name="Sparkles" size={20} /> AI 小祕書</h2>
+                                <div className="bg-indigo-50 p-6 rounded-[2.5rem] border-2 border-indigo-100 shadow-sm">
+                                    <div className="grid grid-cols-2 gap-2 mb-4">
+                                        <button onClick={() => askAI('cantonese')} disabled={aiLoading} className="bg-white p-3 rounded-2xl text-[11px] font-black shadow-sm border border-indigo-100 hover:bg-indigo-50 transition-colors disabled:opacity-50">學粵語</button>
+                                        <button onClick={() => askAI('tips')} disabled={aiLoading} className="bg-white p-3 rounded-2xl text-[11px] font-black shadow-sm border border-indigo-100 hover:bg-indigo-50 transition-colors disabled:opacity-50">行程建議</button>
+                                    </div>
+                                    {aiLoading ? (
+                                        <div className="flex flex-col items-center justify-center p-8 gap-2">
+                                            <SafeIcon name="Loader2" size={24} className="animate-spin text-indigo-400" />
+                                            <span className="text-[10px] font-bold text-indigo-300 tracking-widest">Gemini 思考中...</span>
+                                        </div>
+                                    ) : aiResponse && (
+                                        <div className="bg-white p-4 rounded-2xl text-[12px] font-bold leading-relaxed text-slate-600 border border-indigo-100 whitespace-pre-wrap animate-fadeIn shadow-inner">
+                                            {aiResponse}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Tab Bar - 工具調整到第二個位置 */}
+                    <div className="fixed bottom-0 w-full max-w-md bg-white/90 backdrop-blur-xl border-t border-slate-100 px-6 py-3 flex justify-between items-center z-50 rounded-t-[2rem]">
+                        <button onClick={() => setActiveTab('itinerary')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'itinerary' ? 'text-sky-500 scale-110' : 'text-slate-300'}`}>
+                            <SafeIcon name="Home" size={20} strokeWidth={activeTab === 'itinerary' ? 3 : 2} />
+                            <span className="text-[9px] font-black">行程</span>
+                        </button>
+                        <button onClick={() => setActiveTab('tools')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'tools' ? 'text-amber-500 scale-110' : 'text-slate-300'}`}>
+                            <SafeIcon name="RefreshCw" size={20} strokeWidth={activeTab === 'tools' ? 3 : 2} />
+                            <span className="text-[9px] font-black">工具</span>
+                        </button>
+                        <button onClick={() => setActiveTab('explore')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'explore' ? 'text-rose-500 scale-110' : 'text-slate-300'}`}>
+                            <SafeIcon name="Map" size={20} strokeWidth={activeTab === 'explore' ? 3 : 2} />
+                            <span className="text-[9px] font-black">景點</span>
+                        </button>
+                        <button onClick={() => setActiveTab('ai')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'ai' ? 'text-indigo-500 scale-110' : 'text-slate-300'}`}>
+                            <SafeIcon name="Sparkles" size={20} strokeWidth={activeTab === 'ai' ? 3 : 2} />
+                            <span className="text-[9px] font-black">助手</span>
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
