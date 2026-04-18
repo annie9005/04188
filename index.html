@@ -44,23 +44,15 @@
             transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .diary-card-active {
-            background-color: #FFFDF0;
-            border-color: var(--diary-pink);
-            box-shadow: 2px 2px 0px var(--diary-navy);
-        }
-
-        .detail-btn {
-            background: white;
-            border: 2px dashed var(--diary-blue);
-            color: var(--diary-navy);
-            padding: 4px 12px;
+        /* 標籤設計 */
+        .day-tag {
+            background: var(--diary-orange);
+            color: white;
+            padding: 4px 16px;
             border-radius: 999px;
-            font-size: 11px;
-            font-weight: 900;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            border: 2px solid var(--diary-navy);
         }
 
         .diamond-bullet::before {
@@ -88,10 +80,10 @@
         }
         
         @keyframes pop {
-            0% { transform: scale(0.95); opacity: 0; }
+            0% { transform: scale(0.98); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
-        .animate-pop { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .animate-pop { animation: pop 0.4s ease-out forwards; }
     </style>
 </head>
 <body>
@@ -111,7 +103,6 @@
             const [activeTab, setActiveTab] = useState('itinerary');
             const [activeDay, setActiveDay] = useState(0);
             const [role, setRole] = useState('student');
-            const [expandedEvent, setExpandedEvent] = useState(null);
             const [hkd, setHkd] = useState('');
             const [twd, setTwd] = useState('');
 
@@ -209,8 +200,6 @@
                 ]}
             ];
 
-            const toggleEvent = (id) => setExpandedEvent(expandedEvent === id ? null : id);
-
             return (
                 <div className="max-w-md mx-auto min-h-screen pb-32 overflow-x-hidden relative">
                     {/* Header */}
@@ -233,11 +222,11 @@
                             <button onClick={()=>setRole('teacher')} className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${role==='teacher'?'bg-[var(--diary-pink)] text-white':'text-slate-400'}`}>老師版</button>
                         </div>
 
-                        {/* Day Selector - 依照要求移至切換鈕下方 */}
+                        {/* Day Selector */}
                         {activeTab === 'itinerary' && (
                             <div className="flex justify-between gap-2 overflow-x-auto pb-2 scrollbar-hide animate-pop">
                                 {itinerary.map((d, i) => (
-                                    <button key={i} onClick={() => { setActiveDay(i); setExpandedEvent(null); }} className={`flex-shrink-0 w-14 h-14 rounded-full border-2 border-[var(--diary-navy)] flex flex-col items-center justify-center transition-all ${activeDay===i?'bg-[#F4F1DE] scale-105 shadow-[3px_3px_0px_var(--diary-navy)]': 'bg-white shadow-[2px_2px_0px_var(--diary-navy)]'}`}>
+                                    <button key={i} onClick={() => { setActiveDay(i); window.scrollTo({top: 0, behavior: 'smooth'}); }} className={`flex-shrink-0 w-14 h-14 rounded-full border-2 border-[var(--diary-navy)] flex flex-col items-center justify-center transition-all ${activeDay===i?'bg-[#F4F1DE] scale-105 shadow-[3px_3px_0px_var(--diary-navy)]': 'bg-white shadow-[2px_2px_0px_var(--diary-navy)]'}`}>
                                         <span className="text-[8px] font-black">{d.dayText}</span>
                                         <span className="text-[10px] font-bold">{d.date.split('/')[1]}日</span>
                                     </button>
@@ -259,47 +248,40 @@
                                     {itinerary[activeDay].warnBox && <div className="bg-amber-50 p-3 rounded-xl border-l-4 border-amber-500 text-[11px] leading-relaxed text-amber-800 font-medium mt-2">👨‍🏫 {itinerary[activeDay].warnBox}</div>}
                                 </div>
 
-                                {/* Event Cards */}
-                                {itinerary[activeDay].events.map((e, idx) => {
-                                    const isExpanded = expandedEvent === e.id;
-                                    return (
-                                        <div key={e.id}>
-                                            <div onClick={() => toggleEvent(e.id)} className={`diary-card p-5 relative ${isExpanded ? 'diary-card-active' : ''}`}>
-                                                <div className="flex justify-between items-start">
-                                                    <div className="flex gap-3">
-                                                        <span className={`text-[10px] font-black px-2 py-1 rounded h-fit ${isExpanded ? 'bg-orange-400 text-white' : 'bg-slate-100 text-slate-500'}`}>{e.time}</span>
-                                                        <div className="pr-4">
-                                                            <h4 className="font-bold text-md diamond-bullet">{e.title}</h4>
-                                                            {!isExpanded && <div className="mt-2"><div className="detail-btn">展開說明 <SafeIcon name="ChevronDown" size={12} /></div></div>}
-                                                        </div>
-                                                    </div>
+                                {/* Event Cards - 直接展開內容 */}
+                                {itinerary[activeDay].events.map((e, idx) => (
+                                    <div key={e.id}>
+                                        <div className="diary-card p-5 relative">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div className="flex gap-3">
+                                                    <span className="text-[10px] font-black px-2 py-1 rounded h-fit bg-slate-100 text-slate-500">{e.time}</span>
+                                                    <h4 className="font-bold text-md diamond-bullet text-slate-800">{e.title}</h4>
                                                 </div>
-                                                {isExpanded && (
-                                                    <div className="mt-4 pt-4 border-t-2 border-dashed border-slate-100 space-y-3 animate-pop">
-                                                        {e.img && (
-                                                            <div className="rounded-xl overflow-hidden border-2 border-[var(--diary-navy)] mb-3">
-                                                                <img src={e.img} alt={e.title} className="w-full h-auto object-cover" />
-                                                            </div>
-                                                        )}
-                                                        <p className="text-xs font-bold text-slate-600 leading-relaxed bg-white p-3 rounded-xl border-2 border-slate-100 whitespace-pre-line">
-                                                            {role === 'teacher' ? (e.teacher || e.desc) : e.desc}
-                                                        </p>
-                                                        {e.tip && <p className="text-[10px] font-bold text-pink-500 italic px-1">💡 {e.tip}</p>}
-                                                        {e.trans && <div className="flex items-center gap-2 text-[10px] font-bold text-blue-500 bg-blue-50/50 p-2 rounded-lg">🚌 {e.trans}</div>}
-                                                        
-                                                        <div className="flex gap-2">
-                                                            <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(e.map)}`} target="_blank" className="flex-1 flex items-center justify-center gap-2 py-3 bg-[var(--diary-navy)] text-white rounded-xl text-xs font-black shadow-[3px_3px_0px_var(--diary-blue)] active:translate-y-0.5" onClick={e=>e.stopPropagation()}>
-                                                                <SafeIcon name="MapPin" size={14} /> 開始導航
-                                                            </a>
-                                                            <button className="px-4 py-3 bg-white border-2 border-[var(--diary-navy)] rounded-xl text-xs font-black shadow-[2px_2px_0px_var(--diary-navy)]" onClick={e=>{e.stopPropagation(); toggleEvent(e.id);}}>收合</button>
-                                                        </div>
+                                            </div>
+                                            
+                                            {/* 直接顯示詳細資訊 */}
+                                            <div className="mt-4 pt-4 border-t-2 border-dashed border-slate-100 space-y-3">
+                                                {e.img && (
+                                                    <div className="rounded-xl overflow-hidden border-2 border-[var(--diary-navy)] mb-3 shadow-sm">
+                                                        <img src={e.img} alt={e.title} className="w-full h-auto object-cover" />
                                                     </div>
                                                 )}
+                                                <p className="text-xs font-bold text-slate-600 leading-relaxed bg-white p-3 rounded-xl border-2 border-slate-100 whitespace-pre-line shadow-inner">
+                                                    {role === 'teacher' ? (e.teacher || e.desc) : e.desc}
+                                                </p>
+                                                {e.tip && <p className="text-[10px] font-bold text-pink-500 italic px-1">💡 {e.tip}</p>}
+                                                {e.trans && <div className="flex items-center gap-2 text-[10px] font-bold text-blue-500 bg-blue-50/50 p-2 rounded-lg">🚌 {e.trans}</div>}
+                                                
+                                                <div className="flex gap-2 pt-2">
+                                                    <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(e.map)}`} target="_blank" className="flex-1 flex items-center justify-center gap-2 py-3 bg-[var(--diary-navy)] text-white rounded-xl text-xs font-black shadow-[3px_3px_0px_var(--diary-blue)] active:translate-y-0.5">
+                                                        <SafeIcon name="MapPin" size={14} /> 開始導航
+                                                    </a>
+                                                </div>
                                             </div>
-                                            {idx < itinerary[activeDay].events.length - 1 && <div className="time-line-connector"></div>}
                                         </div>
-                                    );
-                                })}
+                                        {idx < itinerary[activeDay].events.length - 1 && <div className="time-line-connector"></div>}
+                                    </div>
+                                ))}
                             </div>
                         )}
 
